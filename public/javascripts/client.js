@@ -1,193 +1,149 @@
-(function() {
-  var __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
-    for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
-    function ctor() { this.constructor = child; }
-    ctor.prototype = parent.prototype;
-    child.prototype = new ctor;
-    child.__super__ = parent.prototype;
-    return child;
-  }, __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
-  $(function() {
-    window.Todo = (function() {
-      __extends(Todo, Backbone.Model);
-      function Todo() {
-        Todo.__super__.constructor.apply(this, arguments);
-      }
-      Todo.prototype.idAttribute = "_id";
-      Todo.prototype.defaults = {
-        content: "empty todo...",
-        done: false
-      };
-      Todo.prototype.initialize = function() {
-        if (!this.get("content")) {
-          return this.set({
-            content: this.defaults.content
-          });
-        }
-      };
-      Todo.prototype.toggle = function() {
-        return this.save({
-          done: !this.get("done")
-        });
-      };
-      Todo.prototype.clear = function() {
-        this.destroy();
-        return this.view.remove();
-      };
-      return Todo;
-    })();
-    window.TodoList = (function() {
-      __extends(TodoList, Backbone.Collection);
-      function TodoList() {
-        TodoList.__super__.constructor.apply(this, arguments);
-      }
-      TodoList.prototype.model = Todo;
-      TodoList.prototype.url = '/todos';
-      TodoList.prototype.done = function() {
-        return this.filter(function(todo) {
-          return todo.get('done');
-        });
-      };
-      TodoList.prototype.remaining = function() {
-        return this.without.apply(this, this.done());
-      };
-      TodoList.prototype.nextOrder = function() {
-        if (!this.length) {
-          return 1;
-        }
-        return this.last().get('order') + 1;
-      };
-      TodoList.prototype.comparator = function(todo) {
-        return todo.get('order');
-      };
-      return TodoList;
-    })();
-    window.Todos = new TodoList;
-    window.TodoView = (function() {
-      __extends(TodoView, Backbone.View);
-      function TodoView() {
-        this.render = __bind(this.render, this);
-        TodoView.__super__.constructor.apply(this, arguments);
-      }
-      TodoView.prototype.tagName = "li";
-      TodoView.prototype.template = _.template($("#item-template").html());
-      TodoView.prototype.events = {
-        "click .check": "toggleDone",
-        "dblclick div.todo-content": "edit",
-        "click span.todo-destroy": "clear",
-        "keypress .todo-input": "updateOnEnter"
-      };
-      TodoView.prototype.initialize = function() {
-        this.model.bind('change', this.render);
-        return this.model.view = this;
-      };
-      TodoView.prototype.render = function() {
-        $(this.el).html(this.template(this.model.toJSON()));
-        this.setContent();
-        return this;
-      };
-      TodoView.prototype.setContent = function() {
-        var content;
-        content = this.model.get('content');
-        this.$('.todo-content').text(content);
-        this.input = this.$('.todo-input');
-        this.input.bind('blur', this.close);
-        return this.input.val(content);
-      };
-      TodoView.prototype.toggleDone = function() {
-        return this.model.toggle();
-      };
-      TodoView.prototype.edit = function() {
-        $(this.el).addClass("editing");
-        return this.input.focus();
-      };
-      TodoView.prototype.close = function() {
-        this.model.save({
-          content: this.input.val()
-        });
-        return $(this.el).removeClass("editing");
-      };
-      TodoView.prototype.updateOnEnter = function(e) {
-        if (e.keyCode === 13) {
-          return this.close();
-        }
-      };
-      TodoView.prototype.remove = function() {
-        return $(this.el).remove();
-      };
-      TodoView.prototype.clear = function() {
-        return this.model.clear();
-      };
-      return TodoView;
-    })();
-    window.AppView = (function() {
-      __extends(AppView, Backbone.View);
-      function AppView() {
-        this.addAll = __bind(this.addAll, this);
-        this.addOne = __bind(this.addOne, this);
-        this.render = __bind(this.render, this);
-        AppView.__super__.constructor.apply(this, arguments);
-      }
-      AppView.prototype.el = $("#todoapp");
-      AppView.prototype.statsTemplate = _.template($('#stats-template').html());
-      AppView.prototype.events = {
-        "keypress #new-todo": "createOnEnter",
-        "keyup #new-todo": "showTooltip",
-        "click .todo-clear a": "clearCompleted"
-      };
-      AppView.prototype.initialize = function() {
-        this.input = this.$("#new-todo");
-        Todos.bind('add', this.addOne);
-        Todos.bind('reset', this.addAll);
-        Todos.bind('all', this.render);
-        return Todos.fetch();
-      };
-      AppView.prototype.render = function() {
-        return this.$('#todo-stats').html(this.statsTemplate({
-          total: Todos.length,
-          done: Todos.done().length,
-          remaining: Todos.remaining().length
-        }));
-      };
-      AppView.prototype.addOne = function(todo) {
-        var view;
-        view = new TodoView({
-          model: todo
-        });
-        return this.$('#todo-list').append(view.render().el);
-      };
-      AppView.prototype.addAll = function() {
-        return Todos.each(this.addOne);
-      };
-      AppView.prototype.newAttributes = function() {
-        return {
-          content: this.input.val(),
-          order: Todos.nextOrder(),
-          done: false
-        };
-      };
-      AppView.prototype.createOnEnter = function(e) {
-        if (e.keyCode !== 13) {
-          return null;
-        }
-        Todos.create(this.newAttributes());
-        return this.input.val('');
-      };
-      AppView.prototype.clearCompleted = function() {
-        var todo, _fn, _i, _len, _ref;
-        _ref = Todos.done();
-        _fn = function(todo) {
-          return todo.clear();
-        };
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          todo = _ref[_i];
-          _fn(todo);
-        }
-        return false;
-      };
-      AppView.prototype.showTooltip = function(e) {};
-      return AppView;
-    })();
-    return window.App = new AppView;
-  });
-}).call(this);
+$(function(){
+
+var Project = Backbone.Model.extend({
+	idAttribute: "_id",
+	defaults: function() {
+		return {
+			name: 'New project',
+			votes: 0,
+			order: Projects.nextOrder()
+		};
+	},
+	
+	initialize: function() {
+		if (!this.get("name")) {
+			this.set({"name": this.defaults.name});
+		}
+	},
+	
+	clear: function(view) {
+		// Todo: Something weird with the destroy/removes going on here!
+		this.destroy();
+		if (view != null) view.remove();
+		Projects.remove(this);
+	}
+});
+
+var ProjectsList = Backbone.Collection.extend({
+	model: Project,
+	url: '/projects',
+	
+	nextOrder: function() {
+		if (!this.length) return 1;
+		return this.last().get('order') + 1;
+	},
+	
+	comparator: function(project) {
+    	return project.get('order');
+    },
+    
+    totalVotes: function() {
+    	var votes = 0;
+    	this.each(function(project) {
+    		votes += project.get('votes');
+    	});
+    	return votes;
+    }
+});
+
+var Projects = new ProjectsList;
+
+var ProjectView = Backbone.View.extend({
+	tagName: 'li',
+	template: _.template($('#item-template').html()),
+		
+	events: {
+		"dblclick div.project-content" 	: "edit",
+		"keypress .project-input"      	: "updateOnEnter",
+		"click span.project-destroy"   	: "clear",
+		"blur .project-input"          	: "close",
+		"click span.project-vote-button": "vote"
+	},
+	
+	initialize: function() {
+		_.bindAll(this, 'render', 'close');
+		this.model.bind('change', this.render);
+		this.model.bind('destroy', this.remove);
+	},
+	
+	render: function() {
+      	$(this.el).html(this.template(this.model.toJSON()));
+      	this.input = this.$('.project-input');
+      	return this;
+    },
+    
+    close: function() {
+    	if (this.model.get('name') != this.input.val()) {
+	      	this.model.save({name: this.input.val()});
+	    } 	
+      	$(this.el).removeClass("editing");
+    },
+	
+	edit: function() {
+		$(this.el).addClass("editing");
+		this.input.focus();
+	},
+	
+	updateOnEnter: function(e) {
+    	if (e.keyCode == 13) this.close();
+    },
+    
+    clear: function() {
+    	this.model.clear(this);
+    },
+    
+    remove: function() {
+    	$(this.el).remove();
+    },
+    
+    vote: function() {
+    	var currentVotes = this.model.get('votes');
+    	this.model.save({votes: currentVotes + 1});
+    }
+});
+
+var AppView = Backbone.View.extend({
+	el: $("#swmvoting"),
+	statsTemplate: _.template($('#stats-template').html()),
+	
+	events: {
+		"keypress #new-project"	:	"createOnEnter"
+	},
+	
+	initialize: function() {
+		_.bindAll(this, 'addOne', 'addAll', 'render');
+		
+		this.input = this.$("#new-project");
+		
+ 		Projects.bind('add', this.addOne, this);
+      	Projects.bind('reset', this.addAll, this);
+      	Projects.bind('all', this.render, this);
+		
+		Projects.fetch();
+	},
+	
+	render: function() {
+      	this.$("#project-stats").html(this.statsTemplate({projects: Projects.length, votes: Projects.totalVotes()}));
+    },
+    
+    addOne: function(project) {
+    	var view = new ProjectView({model: project});
+      	this.$("#project-list").append(view.render().el);
+    },
+    
+    addAll: function() {
+    	Projects.each(this.addOne);
+    },
+		
+	createOnEnter: function(e) {
+		if (e.keyCode != 13) return;
+		if (this.input.val() == '') return;
+		
+		Projects.create({name: this.input.val(), votes: 0});
+		this.input.val('');
+	}	
+});
+
+var App = new AppView;
+
+});

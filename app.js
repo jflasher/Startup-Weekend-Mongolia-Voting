@@ -1,11 +1,11 @@
-var Todo, app, express, mongoose;
+var Project, app, express, mongoose;
 express = require('express');
 mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost/todone');
+mongoose.connect('mongodb://localhost/swmVoting');
 
-Todo = mongoose.model('Todo', new mongoose.Schema({
-content: String,
-done: Boolean
+Project = mongoose.model('Project', new mongoose.Schema({
+	name: String,
+	votes: Number
 }));
 
 app = express.createServer();
@@ -25,42 +25,42 @@ app.get("/", function(req, res) {
 	return res.render("app");
 });
 
-app.get("/todos", function(req, res) {
-	return Todo.find(function(err, todos) {
-	  return res.send(todos);
+app.get("/projects", function(req, res) {
+	return Project.find(function(err, projects) {
+	  return res.send(projects);
 	});
 });
 
-app.post("/todos", function(req, res) {
-	var todo;
-	todo = new Todo({
-	  content: req.body.content,
-	  done: req.body.done
+app.post("/projects", function(req, res) {
+	var project;
+	project = new Project({
+	  name: req.body.name,
+	  votes: req.body.votes
 	});
-	todo.save(function(err) {
+	project.save(function(err) {
 	  if (!err) {
 		return console.log("created");
 	  }
 	});
-	return res.send(todo);
+	return res.send(project);
 });
 
-app.put("/todos/:id", function(req, res) {
-return Todo.findById(req.params.id, function(err, todo) {
-  todo.content = req.body.content;
-  todo.done = req.body.done;
-  return todo.save(function(err) {
+app.put("/projects/:id", function(req, res) {
+return Project.findById(req.params.id, function(err, project) {
+  project.name = req.body.name;
+  project.votes = req.body.votes;
+  return project.save(function(err) {
 	if (!err) {
 	  console.log("updated");
 	}
-	return res.send(todo);
+	return res.send(project);
   });
 });
 });
 
-app.del('/todos/:id', function(req, res) {
-	return Todo.findById(req.params.id, function(err, todo) {
-	  return todo.remove(function(err) {
+app.del('/projects/:id', function(req, res) {
+	return Project.findById(req.params.id, function(err, project) {
+	  return project.remove(function(err) {
 		if (!err) {
 		  return console.log("removed");
 		}
@@ -68,14 +68,13 @@ app.del('/todos/:id', function(req, res) {
 	});
 });
 
-var io = require('socket.io').listen(app);
-io.sockets.on('connection', function(socket) {
-		console.log('socket!');
-		socket.on('clientVoted', function (data) {
-    		console.log(data);
-    		socket.emit('forceClientUpdate');
-  		});
-	}
-);
+// var io = require('socket.io').listen(app);
+// io.sockets.on('connection', function(socket) {
+// 		socket.on('clientVoted', function (data) {
+//     		console.log(data);
+//     		io.sockets.emit('forceClientUpdate');
+//   		});
+// 	}
+// );
 
 app.listen(3000);

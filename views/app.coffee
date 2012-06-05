@@ -1,68 +1,58 @@
 html ->
   head ->
-    title "ToDoNe"
+    title "SWM Voting"
     link href: "/stylesheets/app.css", media: "all", rel: "stylesheet", type: "text/css"
-    for file in ['json2', 'jquery-1.5', 'underscore-1.1.6', 'backbone']
+    for file in ['json2', 'jquery-1.7.2.min', 'underscore-1.1.6', 'backbone']
       script type: "text/javascript", src: "/javascripts/#{file}.js"
     script src: "/javascripts/client.js"
-    script src: "/socket.io/socket.io.js"
+    #script src: "/socket.io/socket.io.js"
   
   body -> 
-    div id: 'todoapp', ->
+    div id: 'header'
+    
+    div id: 'swmvoting', ->
       div class: 'title', -> h1 "Projects List"
       div class: 'content', ->
-        div id: 'create-todo', ->
-          input type: 'text', id: 'new-todo', placeholder: "What is your idea?"
+        div id: 'create-project', ->
+          input type: 'text', id: 'new-project', placeholder: "What is your idea?"
         
-        div id: 'todos', ->
-          ul id: 'todo-list'
+        div id: 'projects', ->
+          ul id: 'project-list'
         
-        div id: 'todo-stats'
+        div id: 'project-stats'
         
     ul id: 'instructions', ->
-      li "Double-click to edit a todo."
-    
-    div id: 'credits', ->
-      a href: "http://jgn.me/", -> "Created by J&eacute;r&ocirc;me Gravel-Niquet"
+      li "Double-click to edit a project."
           
-    coffeescript -> 
-      window.socket = io.connect() 
-      socket.on 'forceClientUpdate', ->
-        alert 'Hey!' 
-        
-    div id: 'button', ->
-      input type: 'button', onclick: ->  socket.emit 'clientVoted', {test : '1'}
+#    coffeescript -> 
+#      window.socket = io.connect() 
+#      socket.on 'forceClientUpdate', ->
+#        window.AppView.initialize 
+#        
+#    div id: 'button', ->
+#      input type: 'button', onclick: ->  socket.emit 'clientVoted', {test : '1'}
         
     # templates
   
     script type: "text/template", id: "item-template", '''
-      <div class="todo <%= done ? 'done' : '' %>">
+      <div class="project">
         <div class="display">
-          <input class="check" type="checkbox" <%= done ? 'checked="checked"' : '' %> />
-          <div class="todo-content"></div>
-          <span class="todo-destroy"></span>
+          <div class="project-content"><%= name %></div>
+          <span class="project-votes"><%= votes %></span>
+          <span class="project-vote-button"></span>
+          <span class="project-destroy"></span>
         </div>
         <div class="edit">
-          <input class="todo-input" type="text" value="" />
+          <input class="project-input" type="text" value="<%= name %>" />
         </div>
       </div>    
     '''
           
     script type: "text/template", id: "stats-template", '''
-      <% if (total) { %>
-        <span class="todo-count">
-          <span class="number"><%= remaining %></span>
-          <span class="word"><%= remaining == 1 ? 'idea' : 'ideas' %></span> submitted.<br/>
-          <span class="number">30</span>
-          <span class="word"> people voted.</span>
-        </span>
-      <% } %>
-      <% if (done) { %>
-        <span class="todo-clear">
-          <a href="#">
-            Clear <span class="number-done"><%= done %></span>
-            completed <span class="word-done"><%= done == 1 ? 'item' : 'items' %></span>
-          </a>
-        </span>
-      <% } %>      
+	  <span class="project-count">
+	    <span class="number"><%= projects %></span>
+	    <span class="word"><%= projects == 1 ? 'project' : 'projects' %></span> submitted.<br/>
+	    <span class="number"><%= votes %></span>
+	    <span class="word"><%= votes == 1 ? 'vote' : 'votes' %> casted.</span>
+	  </span>    
     '''
