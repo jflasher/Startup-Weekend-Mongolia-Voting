@@ -1,7 +1,7 @@
 html ->
   head ->
     title "SWM Voting"
-    link href: "/stylesheets/app.css", media: "all", rel: "stylesheet", type: "text/css"
+    link href: "/css/app.css", media: "all", rel: "stylesheet", type: "text/css"
     for file in ['json2', 'jquery-1.7.2.min', 'underscore-1.1.6', 'backbone']
       script type: "text/javascript", src: "/javascripts/#{file}.js"
     script src: "/javascripts/client.js"

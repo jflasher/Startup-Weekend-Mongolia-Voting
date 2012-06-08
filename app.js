@@ -22,7 +22,7 @@ app.configure(function() {
 });
 
 app.get("/", function(req, res) {
-	return res.render("app");
+	return res.render("main");
 });
 
 app.get("/projects", function(req, res) {
