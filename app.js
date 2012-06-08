@@ -25,12 +25,21 @@ app.get("/", function(req, res) {
 	return res.render("main");
 });
 
+// List of all projects
 app.get("/projects", function(req, res) {
 	return Project.find(function(err, projects) {
 	  return res.send(projects);
 	});
 });
 
+// Get a single record
+app.get("/projects/:id", function(req, res) {
+	return Project.findById(req.params.id, function(err, project) { 
+		return res.send(project); 
+	});
+});
+
+// Create
 app.post("/projects", function(req, res) {
 	var project;
 	project = new Project({
@@ -45,6 +54,7 @@ app.post("/projects", function(req, res) {
 	return res.send(project);
 });
 
+// Update
 app.put("/projects/:id", function(req, res) {
 return Project.findById(req.params.id, function(err, project) {
   project.name = req.body.name;
@@ -58,6 +68,7 @@ return Project.findById(req.params.id, function(err, project) {
 });
 });
 
+// Delete
 app.del('/projects/:id', function(req, res) {
 	return Project.findById(req.params.id, function(err, project) {
 	  return project.remove(function(err) {
@@ -77,15 +88,49 @@ io.sockets.on('connection', function(socket) {
 		io.sockets.emit('forceClientUpdate');
 	});
 	
-	// A client has added a new project, broadcast to all but sender
+	// A client has created a new project
 	socket.on('projectAdded', function(data) {
-		socket.broadcast.emit('onProjectAdded', data);
+		project = new Project({name: data.name, votes: data.votes});
+		project.save(function(err) {
+			if (!err) {
+				return console.log("created");
+			} else {
+				console.log(err);
+			}
+		});
+		io.sockets.emit('onProjectAdded', data);
 	});
 	
 	// A client has added a vote
 	socket.on('voteAdded', function(data) {
-		socket.broadcast.emit('onVoteAdded', data);
+		Project.findById(data._id, function(err, project) {
+			var currentVotes = project.votes;
+			project.votes = currentVotes + 1;
+			return project.save(function(err) {
+				if (!err) {
+					console.log("vote added");
+					io.sockets.emit('onVoteAdded', data);
+				} else {
+					console.log(err);
+				}				
+			}); 
+		});
 	});
+	
+	// A client has changed a project name
+	socket.on('nameChanged', function(data) {
+		Project.findById(data._id, function(err, project) {
+			project.name = data.name;
+			return project.save(function(err) {
+				if (!err) {
+					console.log("name changed");
+					io.sockets.emit('onNameChanged', data);
+				} else {
+					console.log(err);
+				}				
+			}); 
+		});
+	});	
 });
 
 app.listen(3000);

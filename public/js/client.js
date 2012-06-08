@@ -74,7 +74,9 @@ var ProjectView = Backbone.View.extend({
     
     close: function() {
     	if (this.model.get('name') != this.input.val()) {
-	      	this.model.save({name: this.input.val()});
+    		this.model.set({name: this.input.val(), silent: true});
+    		socket.emit('nameChanged', this.model);
+	      	//this.model.save({name: this.input.val()});
 	    } 	
       	$(this.el).removeClass("editing");
     },
@@ -96,12 +98,9 @@ var ProjectView = Backbone.View.extend({
     	$(this.el).remove();
     },
     
-    vote: function() {
-    	var currentVotes = this.model.get('votes');
-    	this.model.save({votes: currentVotes + 1, wait: true});
-    	
+    vote: function() {    	
 		// Send notice to server
-		socket.emit('voteAdded', this.model);    	
+		socket.emit('voteAdded', this.model);  	
     }
 });
 
@@ -138,7 +137,12 @@ var AppView = Backbone.View.extend({
 		
 		socket.on('onVoteAdded', function(data) {
 			logEvent('onVoteAdded', data);
-			Projects.fetch();
+			Projects.get(data._id).fetch();
+		});
+		
+		socket.on('onNameChanged', function(data) {
+			logEvent('onNameChanged', data);
+			Projects.get(data._id).fetch();
 		});
 	},
 	
@@ -163,7 +167,6 @@ var AppView = Backbone.View.extend({
 		
 		// Create new project
 		var project = new Project({name: this.input.val(), votes: 0});
-		Projects.create(project);
 		
 		// Send notice to server
 		socket.emit('projectAdded', project);
