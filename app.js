@@ -68,13 +68,24 @@ app.del('/projects/:id', function(req, res) {
 	});
 });
 
-// var io = require('socket.io').listen(app);
-// io.sockets.on('connection', function(socket) {
-// 		socket.on('clientVoted', function (data) {
-//     		console.log(data);
-//     		io.sockets.emit('forceClientUpdate');
-//   		});
-// 	}
-// );
+// Socket IO methods
+var io = require('socket.io').listen(app);
+io.sockets.on('connection', function(socket) {
+
+	socket.on('clientVoted', function (data) {
+		console.log(data);
+		io.sockets.emit('forceClientUpdate');
+	});
+	
+	// A client has added a new project, broadcast to all but sender
+	socket.on('projectAdded', function(data) {
+		socket.broadcast.emit('onProjectAdded', data);
+	});
+	
+	// A client has added a vote
+	socket.on('voteAdded', function(data) {
+		socket.broadcast.emit('onVoteAdded', data);
+	});
+});
 
 app.listen(3000);

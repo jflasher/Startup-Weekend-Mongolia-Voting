@@ -2,10 +2,11 @@ html ->
   head ->
     title "SWM Voting"
     link href: "/css/app.css", media: "all", rel: "stylesheet", type: "text/css"
-    for file in ['json2', 'jquery-1.7.2.min', 'underscore-1.1.6', 'backbone']
-      script type: "text/javascript", src: "/javascripts/#{file}.js"
-    script src: "/javascripts/client.js"
-    #script src: "/socket.io/socket.io.js"
+    for file in ['json2', 'jquery-1.7.2.min', 'underscore-1.1.6', 'backbone', 'logger']
+      script type: "text/javascript", src: "/js/#{file}.js"
+    script src: "/socket.io/socket.io.js"
+    script src: "/js/client.js"
+    
   
   body -> 
     div id: 'header'
@@ -27,10 +28,10 @@ html ->
 #    coffeescript -> 
 #      window.socket = io.connect() 
 #      socket.on 'forceClientUpdate', ->
-#        window.AppView.initialize 
-#        
-#    div id: 'button', ->
-#      input type: 'button', onclick: ->  socket.emit 'clientVoted', {test : '1'}
+#        alert 'hi' 
+        
+    div id: 'button', ->
+      input type: 'button', onclick: ->  socket.emit 'clientVoted', {test : '1'}
         
     # templates
   

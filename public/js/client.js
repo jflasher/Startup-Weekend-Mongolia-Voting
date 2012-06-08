@@ -98,7 +98,10 @@ var ProjectView = Backbone.View.extend({
     
     vote: function() {
     	var currentVotes = this.model.get('votes');
-    	this.model.save({votes: currentVotes + 1});
+    	this.model.save({votes: currentVotes + 1, wait: true});
+    	
+		// Send notice to server
+		socket.emit('voteAdded', this.model);    	
     }
 });
 
@@ -120,6 +123,23 @@ var AppView = Backbone.View.extend({
       	Projects.bind('all', this.render, this);
 		
 		Projects.fetch();
+		
+		// Socket.io methods
+		socket = io.connect();
+		socket.on('forceClientUpdate', function(data) {
+			logEvent('forceClientUpdate', data);
+		});
+		
+		// New project added
+		socket.on('onProjectAdded', function(data) {
+			logEvent('onProjectAdded', data);
+			Projects.fetch();
+		});
+		
+		socket.on('onVoteAdded', function(data) {
+			logEvent('onVoteAdded', data);
+			Projects.fetch();
+		});
 	},
 	
 	render: function() {
@@ -132,6 +152,8 @@ var AppView = Backbone.View.extend({
     },
     
     addAll: function() {
+    	// Empty the list and then rebuild it
+    	this.$("#project-list").empty();
     	Projects.each(this.addOne);
     },
 		
@@ -139,9 +161,16 @@ var AppView = Backbone.View.extend({
 		if (e.keyCode != 13) return;
 		if (this.input.val() == '') return;
 		
-		Projects.create({name: this.input.val(), votes: 0});
+		// Create new project
+		var project = new Project({name: this.input.val(), votes: 0});
+		Projects.create(project);
+		
+		// Send notice to server
+		socket.emit('projectAdded', project);
+		
+		// Clear input field
 		this.input.val('');
-	}	
+	}
 });
 
 var App = new AppView;
