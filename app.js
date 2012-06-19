@@ -39,46 +39,6 @@ app.get("/projects/:id", function(req, res) {
 	});
 });
 
-// Create
-app.post("/projects", function(req, res) {
-	var project;
-	project = new Project({
-	  name: req.body.name,
-	  votes: req.body.votes
-	});
-	project.save(function(err) {
-	  if (!err) {
-		return console.log("created");
-	  }
-	});
-	return res.send(project);
-});
-
-// Update
-app.put("/projects/:id", function(req, res) {
-return Project.findById(req.params.id, function(err, project) {
-  project.name = req.body.name;
-  project.votes = req.body.votes;
-  return project.save(function(err) {
-	if (!err) {
-	  console.log("updated");
-	}
-	return res.send(project);
-  });
-});
-});
-
-// Delete
-app.del('/projects/:id', function(req, res) {
-	return Project.findById(req.params.id, function(err, project) {
-	  return project.remove(function(err) {
-		if (!err) {
-		  return console.log("removed");
-		}
-	  });
-	});
-});
-
 // Socket IO methods
 var io = require('socket.io').listen(app);
 io.sockets.on('connection', function(socket) {
@@ -130,7 +90,21 @@ io.sockets.on('connection', function(socket) {
 				}				
 			}); 
 		});
-	});	
+	});
+	
+	// A client has deleted a project
+	socket.on('projectDeleted', function(data) {
+		Project.findById(data._id, function(err, project) {
+			return project.remove(function(err) {
+				if (!err) {
+					console.log("project deleted");
+					io.sockets.emit('onProjectDeleted', data);
+				} else {
+					console.log(err);
+				}				
+			}); 
+		});
+	});		
 });
 
 app.listen(3000);
