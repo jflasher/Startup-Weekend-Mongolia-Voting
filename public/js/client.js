@@ -14,13 +14,6 @@ var Project = Backbone.Model.extend({
 		if (!this.get("name")) {
 			this.set({"name": this.defaults.name});
 		}
-	},
-	
-	clear: function(view) {
-		// Todo: Something weird with the destroy/removes going on here!
-		this.destroy();
-		if (view != null) view.remove();
-		Projects.remove(this);
 	}
 });
 
@@ -76,7 +69,6 @@ var ProjectView = Backbone.View.extend({
     	if (this.model.get('name') != this.input.val()) {
     		this.model.set({name: this.input.val(), silent: true});
     		socket.emit('nameChanged', this.model);
-	      	//this.model.save({name: this.input.val()});
 	    } 	
       	$(this.el).removeClass("editing");
     },
@@ -91,7 +83,7 @@ var ProjectView = Backbone.View.extend({
     },
     
     clear: function() {
-    	this.model.clear(this);
+    	socket.emit('projectDeleted', this.model);
     },
     
     remove: function() {
@@ -144,6 +136,11 @@ var AppView = Backbone.View.extend({
 			logEvent('onNameChanged', data);
 			Projects.get(data._id).fetch();
 		});
+		
+		socket.on('onProjectDeleted', function(data) {
+			logEvent('onProjectDeleted', data);
+			Projects.fetch();
+		});		
 	},
 	
 	render: function() {
