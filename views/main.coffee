@@ -20,18 +20,11 @@ html ->
         div id: 'projects', ->
           ul id: 'project-list'
         
-        div id: 'project-stats'
+        div id: 'project-stats'     
         
-    ul id: 'instructions', ->
-      li "Double-click to edit a project."
-          
-#    coffeescript -> 
-#      window.socket = io.connect() 
-#      socket.on 'forceClientUpdate', ->
-#        alert 'hi' 
-        
-    div id: 'button', ->
-      input type: 'button', onclick: ->  socket.emit 'clientVoted', {test : '1'}
+      div id: 'admin-area'
+    
+    
         
     # templates
   
@@ -56,4 +49,10 @@ html ->
 	    <span class="number"><%= votes %></span>
 	    <span class="word"><%= votes == 1 ? 'vote' : 'votes' %> casted.</span>
 	  </span>    
+    '''
+    
+    script type: "text/template", id: "admin-template", '''
+      <div class="admin">
+	    Log <%= isAdmin == false ? 'in' : 'out' %> as <span class="requestAdmin">admin</span>.
+	  </div>
     '''

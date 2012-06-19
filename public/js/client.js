@@ -74,8 +74,12 @@ var ProjectView = Backbone.View.extend({
     },
 	
 	edit: function() {
-		$(this.el).addClass("editing");
-		this.input.focus();
+		if (isAdmin == true) {
+			$(this.el).addClass("editing");
+			this.input.focus();
+		} else {
+			alert('This is an admin only function!');
+		}
 	},
 	
 	updateOnEnter: function(e) {
@@ -83,7 +87,11 @@ var ProjectView = Backbone.View.extend({
     },
     
     clear: function() {
-    	socket.emit('projectDeleted', this.model);
+    	if (isAdmin == true) {
+	    	socket.emit('projectDeleted', this.model);
+	    } else {
+		    alert('This is an admin only function!');
+	    }
     },
     
     remove: function() {
@@ -99,20 +107,28 @@ var ProjectView = Backbone.View.extend({
 var AppView = Backbone.View.extend({
 	el: $("#swmvoting"),
 	statsTemplate: _.template($('#stats-template').html()),
+	adminTemplate: _.template($('#admin-template').html()),
 	
 	events: {
-		"keypress #new-project"	:	"createOnEnter"
+		"keypress #new-project"		:	"createOnEnter",
+		"click span.requestAdmin"	: 	"requestAdmin"
 	},
 	
 	initialize: function() {
-		_.bindAll(this, 'addOne', 'addAll', 'render');
+		_.bindAll(this, 'addOne', 'addAll', 'render', 'updateAdminLabel', 'requestAdmin');
+		
+		isAdmin = false;
 		
 		this.input = this.$("#new-project");
+		
+		// Set initial admin label state
+		this.updateAdminLabel();
 		
  		Projects.bind('add', this.addOne, this);
       	Projects.bind('reset', this.addAll, this);
       	Projects.bind('all', this.render, this);
 		
+		// Fetch initial projects list
 		Projects.fetch();
 		
 		// Socket.io methods
@@ -140,11 +156,27 @@ var AppView = Backbone.View.extend({
 		socket.on('onProjectDeleted', function(data) {
 			logEvent('onProjectDeleted', data);
 			Projects.fetch();
+		});
+		
+		socket.on('onRequestAdmin', function(success) {
+			logEvent('onRequestAdmin', success);
+			//alert(isAdmin);
+			isAdmin = success;
+			//alert(isAdmin);
+			// This probably should not call directly to App
+			App.updateAdminLabel();
+			if (success) {
+				alert('You\'re now an admin!');
+			}
 		});		
 	},
 	
 	render: function() {
       	this.$("#project-stats").html(this.statsTemplate({projects: Projects.length, votes: Projects.totalVotes()}));
+    },
+    
+    updateAdminLabel: function() {
+	    this.$("#admin-area").html(this.adminTemplate({isAdmin: isAdmin}));
     },
     
     addOne: function(project) {
@@ -170,7 +202,21 @@ var AppView = Backbone.View.extend({
 		
 		// Clear input field
 		this.input.val('');
-	}
+	},
+    
+    requestAdmin: function() {
+    	// Log in or out of being an admin
+    	if (isAdmin) {
+	    	isAdmin = false;
+	    	this.updateAdminLabel();
+	    	alert('You\'re no longer an admin!');
+    	} else {
+		    var pw = prompt("Please enter password","");
+		    if (pw) {
+				socket.emit('requestAdmin', pw);
+			}
+		}
+    }
 });
 
 var App = new AppView;

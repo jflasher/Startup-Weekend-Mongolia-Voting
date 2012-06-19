@@ -104,6 +104,11 @@ io.sockets.on('connection', function(socket) {
 				}				
 			}); 
 		});
+	});
+	
+	// A client has request admin access
+	socket.on('requestAdmin', function(pw) {
+		socket.emit('onRequestAdmin', pw == 'nimda');
 	});		
 });
 
