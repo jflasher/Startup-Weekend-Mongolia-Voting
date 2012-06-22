@@ -1,3 +1,6 @@
+// The server status, when it starts it should be closed
+serverStatus = 'closed';
+
 var Project, app, express, mongoose;
 express = require('express');
 mongoose = require('mongoose');
@@ -109,7 +112,21 @@ io.sockets.on('connection', function(socket) {
 	// A client has request admin access
 	socket.on('requestAdmin', function(pw) {
 		socket.emit('onRequestAdmin', pw == 'nimda');
-	});		
+	});
+	
+	// Request for server status
+	socket.on('requestServerStatus', function() {
+		socket.emit('onRequestServerStatus', serverStatus);
+	});
+	
+	// Change the server status from admin panel
+	socket.on('changeServerStatus', function(status) {
+		// Make sure it's a change
+		if (status != serverStatus) {
+			serverStatus = status;
+			io.sockets.emit('onServerStatusChanged', serverStatus);
+		}
+	});
 });
 
 app.listen(3000);

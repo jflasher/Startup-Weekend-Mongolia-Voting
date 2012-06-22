@@ -13,6 +13,7 @@ html ->
     
     div id: 'swmvoting', ->
       div class: 'title', -> h1 "Projects List"
+      div class: 'status', -> h2 "Initializing the Universe!"
       div class: 'content', ->
         div id: 'create-project', ->
           input type: 'text', id: 'new-project', placeholder: "What is your idea?"
@@ -54,5 +55,12 @@ html ->
     script type: "text/template", id: "admin-template", '''
       <div class="admin">
 	    Log <%= isAdmin == false ? 'in' : 'out' %> as <span class="requestAdmin">admin</span>.
+	    <% if (isAdmin) { %>
+	      <br/>Status: <span class="statusClosed">Closed</span> | <span class="statusOpen">Open</span> | <span class="statusVoting">Voting</span>
+	    <% } %>
 	  </div>
     '''
+    
+    script type: "text/template", id: "status-template", '''
+      <h2><%= text %></h2>
+    '''    

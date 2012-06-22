@@ -108,14 +108,18 @@ var AppView = Backbone.View.extend({
 	el: $("#swmvoting"),
 	statsTemplate: _.template($('#stats-template').html()),
 	adminTemplate: _.template($('#admin-template').html()),
+	statusTemplate: _.template($('#status-template').html()),
 	
 	events: {
 		"keypress #new-project"		:	"createOnEnter",
-		"click span.requestAdmin"	: 	"requestAdmin"
+		"click span.requestAdmin"	: 	"requestAdmin",
+		"click span.statusClosed"	:	"setStatusClosed",
+		"click span.statusOpen"		:	"setStatusOpen",
+		"click span.statusVoting"	:	"setStatusVoting"				
 	},
 	
 	initialize: function() {
-		_.bindAll(this, 'addOne', 'addAll', 'render', 'updateAdminLabel', 'requestAdmin');
+		_.bindAll(this, 'addOne', 'addAll', 'render', 'updateAdminLabel', 'requestAdmin', 'setStatusLabel', 'setStatusClosed', 'setStatusOpen', 'setStatusVoting');
 		
 		isAdmin = false;
 		
@@ -168,7 +172,20 @@ var AppView = Backbone.View.extend({
 			if (success) {
 				alert('You\'re now an admin!');
 			}
-		});		
+		});
+		
+		socket.on('onRequestServerStatus', function(status) {
+			logEvent('onRequestServerStatus', status);
+			App.setStatusLabel(status);
+		});
+		
+		socket.on('onServerStatusChanged', function(status) {
+			logEvent('onServerStatusChanged', status);
+			App.setStatusLabel(status);
+		});
+		
+		// Request the current server status
+		socket.emit('requestServerStatus');
 	},
 	
 	render: function() {
@@ -203,6 +220,18 @@ var AppView = Backbone.View.extend({
 		// Clear input field
 		this.input.val('');
 	},
+	
+	setStatusLabel: function(status) {
+		if (status == 'open') {
+			this.$(".status").html(this.statusTemplate({text: 'Projects can be added but no voting yet.'}));
+		} else if (status == 'closed') {
+			this.$(".status").html(this.statusTemplate({text: 'No projects may be added or voted upon.'}));
+		} else if (status == 'voting') {
+			this.$(".status").html(this.statusTemplate({text: 'Voting is enabled, but no projects can be added.'}));
+		} else {
+			this.$(".status").html(this.statusTemplate({text: 'Something has gone very wrong...'}));
+		}
+	},
     
     requestAdmin: function() {
     	// Log in or out of being an admin
@@ -216,6 +245,22 @@ var AppView = Backbone.View.extend({
 				socket.emit('requestAdmin', pw);
 			}
 		}
+    },
+    
+    setServerStatus: function(status) {
+	    socket.emit('changeServerStatus', status);
+    },
+    
+    setStatusClosed: function() {
+	    this.setServerStatus('closed');
+    },
+    
+    setStatusOpen: function() {
+	    this.setServerStatus('open');
+    },
+    
+    setStatusVoting: function() {
+	    this.setServerStatus('voting');
     }
 });
 
