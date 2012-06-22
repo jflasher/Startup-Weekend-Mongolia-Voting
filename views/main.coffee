@@ -24,8 +24,9 @@ html ->
         div id: 'project-stats'     
         
       div id: 'admin-area'
-    
-    
+      
+    div id: 'credits', ->
+      a href: 'http://arssollertia.com', -> img src: '../images/arsLogo.png'
         
     # templates
   
@@ -46,9 +47,9 @@ html ->
     script type: "text/template", id: "stats-template", '''
 	  <span class="project-count">
 	    <span class="number"><%= projects %></span>
-	    <span class="word"><%= projects == 1 ? 'project' : 'projects' %></span> submitted.<br/>
+	    <span class="word"><%= projects == 1 ? 'project' : 'projects' %></span> submitted<br/>
 	    <span class="number"><%= votes %></span>
-	    <span class="word"><%= votes == 1 ? 'vote' : 'votes' %> casted.</span>
+	    <span class="word"><%= votes == 1 ? 'vote' : 'votes' %> casted</span>
 	  </span>    
     '''
     

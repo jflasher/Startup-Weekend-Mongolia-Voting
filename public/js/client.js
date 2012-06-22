@@ -98,7 +98,12 @@ var ProjectView = Backbone.View.extend({
     	$(this.el).remove();
     },
     
-    vote: function() {    	
+    vote: function() {
+    	// Make sure we're in the voting state
+    	if (serverStatus != 'voting') {
+	    	return;
+    	}
+    	
 		// Send notice to server
 		socket.emit('voteAdded', this.model);  	
     }
@@ -119,9 +124,13 @@ var AppView = Backbone.View.extend({
 	},
 	
 	initialize: function() {
-		_.bindAll(this, 'addOne', 'addAll', 'render', 'updateAdminLabel', 'requestAdmin', 'setStatusLabel', 'setStatusClosed', 'setStatusOpen', 'setStatusVoting');
+		_.bindAll(this, 'addOne', 'addAll', 'render', 'updateAdminLabel', 'requestAdmin', 'setStatusLabel', 'setStatusClosed', 'setStatusOpen', 'setStatusVoting', 'disableAddNewProject');
 		
+		// We start off not in the admin state
 		isAdmin = false;
+		
+		// We start off in the closed state
+		serverStatus = 'closed';
 		
 		this.input = this.$("#new-project");
 		
@@ -176,12 +185,17 @@ var AppView = Backbone.View.extend({
 		
 		socket.on('onRequestServerStatus', function(status) {
 			logEvent('onRequestServerStatus', status);
-			App.setStatusLabel(status);
+			serverStatus = status;
+			App.setStatusLabel();
+			App.disableAddNewProject(serverStatus != 'open');
 		});
 		
 		socket.on('onServerStatusChanged', function(status) {
 			logEvent('onServerStatusChanged', status);
-			App.setStatusLabel(status);
+			serverStatus = status;
+			App.setStatusLabel();
+			// If we're going to open, make sure the text field is editable or disabled if not
+			App.disableAddNewProject(serverStatus != 'open');
 		});
 		
 		// Request the current server status
@@ -208,6 +222,7 @@ var AppView = Backbone.View.extend({
     },
 		
 	createOnEnter: function(e) {
+		if (serverStatus != 'open') return;
 		if (e.keyCode != 13) return;
 		if (this.input.val() == '') return;
 		
@@ -221,13 +236,13 @@ var AppView = Backbone.View.extend({
 		this.input.val('');
 	},
 	
-	setStatusLabel: function(status) {
-		if (status == 'open') {
-			this.$(".status").html(this.statusTemplate({text: 'Projects can be added but no voting yet.'}));
-		} else if (status == 'closed') {
-			this.$(".status").html(this.statusTemplate({text: 'No projects may be added or voted upon.'}));
-		} else if (status == 'voting') {
-			this.$(".status").html(this.statusTemplate({text: 'Voting is enabled, but no projects can be added.'}));
+	setStatusLabel: function() {
+		if (serverStatus == 'open') {
+			this.$(".status").html(this.statusTemplate({text: 'Add projects, voting will start soon!'}));
+		} else if (serverStatus == 'closed') {
+			this.$(".status").html(this.statusTemplate({text: 'Hold your horses!'}));
+		} else if (serverStatus == 'voting') {
+			this.$(".status").html(this.statusTemplate({text: 'Vote, vote, vote!'}));
 		} else {
 			this.$(".status").html(this.statusTemplate({text: 'Something has gone very wrong...'}));
 		}
@@ -261,6 +276,10 @@ var AppView = Backbone.View.extend({
     
     setStatusVoting: function() {
 	    this.setServerStatus('voting');
+    }, 
+    
+    disableAddNewProject: function(tf) {
+	    this.$("#new-project").attr("disabled", tf);
     }
 });
 

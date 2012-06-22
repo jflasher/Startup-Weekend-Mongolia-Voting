@@ -233,4 +233,15 @@ html {
   }
   #admin-area .admin .statusVoting {
   	cursor: pointer;
+  }
+  
+#credits {
+  width: 520px;
+  margin: 30px auto;
+  color: #999;
+  text-shadow: rgba(255, 255, 255, 0.8) 0 1px 0;
+  text-align: center;
+}
+  #credits a {
+    color: #888;
   }        
