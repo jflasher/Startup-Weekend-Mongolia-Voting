@@ -27,6 +27,7 @@ html ->
       
     div id: 'credits', ->
       a href: 'http://arssollertia.com', target: '_blank', -> img src: '../images/arsLogo.png'
+      p -> '<br/>Based on the ToDo example by <a href="http://jgn.me/" target="_blank">J&eacute;r&ocirc;me Gravel-Niquet</a>'
         
     # templates
   
