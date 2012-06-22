@@ -208,6 +208,23 @@ var AppView = Backbone.View.extend({
     
     updateAdminLabel: function() {
 	    this.$("#admin-area").html(this.adminTemplate({isAdmin: isAdmin}));
+	    this.updateAdminStates();
+    },
+    
+    updateAdminStates: function() {
+	    if (serverStatus == 'open') {
+			this.$(".statusClosed").removeClass("active");
+			this.$(".statusOpen").addClass("active");
+			this.$(".statusVoting").removeClass("active");
+		} else if (serverStatus == 'closed') {
+			this.$(".statusClosed").addClass("active");
+			this.$(".statusOpen").removeClass("active");
+			this.$(".statusVoting").removeClass("active");
+		} else if (serverStatus == 'voting') {
+			this.$(".statusClosed").removeClass("active");
+			this.$(".statusOpen").removeClass("active");
+			this.$(".statusVoting").addClass("active");
+		}
     },
     
     addOne: function(project) {
@@ -238,11 +255,14 @@ var AppView = Backbone.View.extend({
 	
 	setStatusLabel: function() {
 		if (serverStatus == 'open') {
-			this.$(".status").html(this.statusTemplate({text: 'Add projects, voting will start soon!'}));
+			this.$(".status").html(this.statusTemplate({text: 'Submissions Open - Add projects, voting will start soon!'}));
+			this.updateAdminStates();
 		} else if (serverStatus == 'closed') {
-			this.$(".status").html(this.statusTemplate({text: 'Hold your horses!'}));
+			this.$(".status").html(this.statusTemplate({text: 'Submissions Closed - Hold your horses!'}));
+			this.updateAdminStates();
 		} else if (serverStatus == 'voting') {
 			this.$(".status").html(this.statusTemplate({text: 'Vote, vote, vote!'}));
+			this.updateAdminStates();
 		} else {
 			this.$(".status").html(this.statusTemplate({text: 'Something has gone very wrong...'}));
 		}
