@@ -26,7 +26,7 @@ html ->
       div id: 'admin-area'
       
     div id: 'credits', ->
-      a href: 'http://arssollertia.com', -> img src: '../images/arsLogo.png'
+      a href: 'http://arssollertia.com', target: '_blank', -> img src: '../images/arsLogo.png'
         
     # templates
   
