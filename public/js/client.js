@@ -120,7 +120,8 @@ var AppView = Backbone.View.extend({
 		"click span.requestAdmin"	: 	"requestAdmin",
 		"click span.statusClosed"	:	"setStatusClosed",
 		"click span.statusOpen"		:	"setStatusOpen",
-		"click span.statusVoting"	:	"setStatusVoting"				
+		"click span.statusVoting"	:	"setStatusVoting",
+		"click span.statusReset"	:	"resetAll"			
 	},
 	
 	initialize: function() {
@@ -171,6 +172,11 @@ var AppView = Backbone.View.extend({
 			Projects.fetch();
 		});
 		
+		socket.on('onReset', function() {
+			logEvent('onReset', '');
+			Projects.fetch();
+		});		
+		
 		socket.on('onRequestAdmin', function(success) {
 			logEvent('onRequestAdmin', success);
 			//alert(isAdmin);
@@ -178,9 +184,11 @@ var AppView = Backbone.View.extend({
 			//alert(isAdmin);
 			// This probably should not call directly to App
 			App.updateAdminLabel();
+/*
 			if (success) {
 				alert('You\'re now an admin!');
 			}
+*/
 		});
 		
 		socket.on('onRequestServerStatus', function(status) {
@@ -300,6 +308,11 @@ var AppView = Backbone.View.extend({
     
     disableAddNewProject: function(tf) {
 	    this.$("#new-project").attr("disabled", tf);
+    },
+    
+    resetAll: function() {
+    	var tf = confirm('This will remove all projects and votes. Are you sure you want to do this?');
+    	if (tf) socket.emit('reset');
     }
 });
 

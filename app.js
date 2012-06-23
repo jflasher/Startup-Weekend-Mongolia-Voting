@@ -127,6 +127,14 @@ io.sockets.on('connection', function(socket) {
 			io.sockets.emit('onServerStatusChanged', serverStatus);
 		}
 	});
+	
+	// A client wants to reset everything
+	socket.on('reset', function() {
+		// Clear all from db
+		Project.find().remove();
+		io.sockets.emit('onReset');	
+	});
+	
 });
 
 app.listen(3000);

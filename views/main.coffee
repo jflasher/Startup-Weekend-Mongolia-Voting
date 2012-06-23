@@ -58,7 +58,7 @@ html ->
       <div class="admin">
 	    Log <%= isAdmin == false ? 'in' : 'out' %> as <span class="requestAdmin">admin</span>.
 	    <% if (isAdmin) { %>
-	      <br/>Status: <span class="statusClosed">Closed</span> | <span class="statusOpen">Open</span> | <span class="statusVoting">Voting</span>
+	      <br/>Status: <span class="statusClosed">Closed</span> | <span class="statusOpen">Open</span> | <span class="statusVoting">Voting</span> | <span class="statusReset">Reset</span>
 	    <% } %>
 	  </div>
     '''

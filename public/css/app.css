@@ -235,6 +235,9 @@ html {
   #admin-area .admin .statusVoting {
   	cursor: pointer;
   }
+  #admin-area .admin .statusReset {
+  	cursor: pointer;
+  }  
   #admin-area .admin .active {
 	  font-weight: bold;
   }
